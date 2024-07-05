@@ -8,7 +8,7 @@ on:
     branches: [helm-release]
     paths:
       - charts/ocis/**
-  workflow_call:
+  workflow_dispatch:
 
 jobs:
   release:
