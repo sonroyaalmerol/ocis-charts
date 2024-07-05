@@ -35,8 +35,8 @@ jobs:
         with:
           charts_dir: charts
           pages_branch: gh-pages
-          mark_as_latest: false
-          skip_existing: true
+          mark_as_latest: true
+          skip_existing: false
           config: ./charts/cr.yaml
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
