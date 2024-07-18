@@ -60,6 +60,11 @@ spec:
             - name: WEB_OIDC_CLIENT_ID
               value: {{ .Values.features.externalUserManagement.oidc.webClientID | quote }}
 
+            {{- with .Values.features.externalUserManagement.oidc }}
+            - name: WEB_OIDC_SCOPE
+              value: {{ printf "openid profile email%s%s" (default "" (printf " %s" .userIDClaim)) (default "" (printf " %s" .roleAssignment.claim)) | trim | quote }}
+            {{- end }}
+
             - name: WEB_UI_THEME_SERVER
             {{- if .Values.services.web.config.theme.server }}
               value: {{ .Values.services.web.config.theme.server | quote }}
