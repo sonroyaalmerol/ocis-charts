@@ -49,21 +49,19 @@ spec:
               value: 0.0.0.0:9100
             - name: WEB_DEBUG_ADDR
               value: 0.0.0.0:9104
-
-            {{- with .Values.features.externalUserManagement }}
             - name: WEB_OIDC_AUTHORITY
-            {{- if not .enabled }}
+            {{- if not .Values.features.externalUserManagement.enabled }}
               value: "https://{{ .Values.externalDomain }}"
             {{- else }}
-              value: {{ .oidc.issuerURI | quote }}
+              value: {{ .Values.features.externalUserManagement.oidc.issuerURI | quote }}
             {{- end }}
 
             - name: WEB_OIDC_CLIENT_ID
-              value: {{ .oidc.webClientID | quote }}
+              value: {{ .Values.features.externalUserManagement.oidc.webClientID | quote }}
 
+            {{- with .Values.features.externalUserManagement.oidc }}
             - name: WEB_OIDC_SCOPE
-              value: {{ printf "openid profile email %s" (printf "%s %s" (.oidc.userIDClaim | default "") (.oidc.roleAssignment.claim | default "") | trim) | quote }}
-
+              value: {{ printf "openid profile email%s%s" (default "" (printf " %s" .userIDClaim)) (default "" (printf " %s" .roleAssignment.claim)) | trim | quote }}
             {{- end }}
 
             - name: WEB_UI_THEME_SERVER
