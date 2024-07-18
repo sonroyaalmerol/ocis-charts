@@ -50,15 +50,21 @@ spec:
             - name: WEB_DEBUG_ADDR
               value: 0.0.0.0:9104
 
+            {{- with .Values.features.externalUserManagement }}
             - name: WEB_OIDC_AUTHORITY
-            {{- if not .Values.features.externalUserManagement.enabled }}
+            {{- if not .enabled }}
               value: "https://{{ .Values.externalDomain }}"
             {{- else }}
-              value: {{ .Values.features.externalUserManagement.oidc.issuerURI | quote }}
+              value: {{ .oidc.issuerURI | quote }}
             {{- end }}
 
             - name: WEB_OIDC_CLIENT_ID
-              value: {{ .Values.features.externalUserManagement.oidc.webClientID | quote }}
+              value: {{ .oidc.webClientID | quote }}
+
+            - name: WEB_OIDC_SCOPE
+              value: {{ printf "openid profile email %s" (printf "%s %s" (.oidc.userIDClaim | default "") (.oidc.roleAssignment.claim | default "") | trim) | quote }}
+
+            {{- end }}
 
             - name: WEB_UI_THEME_SERVER
             {{- if .Values.services.web.config.theme.server }}
