@@ -25,6 +25,8 @@ spec:
           env:
             {{- include "ocis.serviceRegistry" . | nindent 12 }}
             {{- include "ocis.cacheStore" . | nindent 12 }}
+            {{- include "ocis.events" . | nindent 12 }}
+
 
             - name: PROXY_LOG_COLOR
               value: {{ .Values.logging.color | quote }}
@@ -104,6 +106,9 @@ spec:
                 secretKeyRef:
                   name: {{ include "secrets.serviceAccountSecret" . }}
                   key: service-account-secret
+
+            - name: PROXY_CSP_CONFIG_FILE_LOCATION
+              value: /etc/ocis/csp.yaml
 
             {{- if .Values.features.policies.enabled }}
             - name: PROXY_POLICIES_QUERY

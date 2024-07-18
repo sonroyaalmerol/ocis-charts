@@ -3,7 +3,7 @@
 # Image for oCIS services
 image:
   # -- Image repository
-  repository: owncloud/ocis
+  repository: owncloud/ocis-rolling
   # -- Image tag. Defaults to the chart's appVersion.
   tag: ""
   # -- Image sha / digest (optional).
@@ -60,6 +60,57 @@ http:
     #-- allow_origins is a list of origins a cross-domain request can be executed from.
     # If the special "*" value is present in the list, all origins will be allowed.
     allow_origins: []
+  # CSP settings for oCIS services.
+  csp:
+    directives:
+      # -- child-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/child-src
+      childSrc:
+        - "'self'"
+      # -- connect-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/connect-src
+      connectSrc:
+        - "'self'"
+        # If Uppy Companion is used, you need to add it with your URI:
+        # - "https://companion.kube.owncloud.test/"
+        # - "wss:///companion.kube.owncloud.test/"
+      # -- default-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/default-src
+      defaultSrc:
+        - "'none'"
+      # -- front-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/front-src
+      fontSrc:
+        - "'self'"
+      # -- frame-ancestors directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors
+      frameAncestors:
+        - "'self'"
+      # -- frame-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-src
+      frameSrc:
+        - "'self'"
+        - "blob:"
+        # Needed for the draw-io integration that is enabled by default.
+        # Can be removed when "draw-io" is removed from services.web.config.apps
+        - "https://embed.diagrams.net/"
+      # -- img-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/img-src
+      imgSrc:
+        - "'self'"
+        - "data:"
+        - "blob:"
+      # -- manifest-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/manifest-src
+      manifestSrc:
+        - "'self'"
+      # -- media-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/media-src
+      mediaSrc:
+        - "'self'"
+      # -- object-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/object-src
+      objectSrc:
+        - "'self'"
+        - "blob:"
+      # -- script-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src
+      scriptSrc:
+        - "'self'"
+        - "'unsafe-inline'"
+      # -- style-src directive, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src
+      styleSrc:
+        - "'self'"
+        - "'unsafe-inline'"
 
 # Debug settings for the oCIS service
 debug:
@@ -258,6 +309,24 @@ features:
           # -- Disables SSL certificate checking for connections to the office suites http api.
           # Not recommended for production installations.
           insecure: false
+          # Ingress for collaboration service.
+          ingress:
+            # -- Enables the Ingress. Only needed if the office application is not running within the same cluster.
+            enabled: false
+            # -- Domain of the Ingress.
+            domain: ""
+            # -- Ingress class to use.
+            # Uses the default ingress class if not set.
+            ingressClassName:
+            # -- Ingress annotations.
+            annotations: {}
+            # -- Labels for the ingress.
+            labels: {}
+            # -- Ingress TLS configuration.
+            tls: []
+            #  - secretName: chart-example-tls
+            #    hosts:
+            #      - collabora-wopi.owncloud.test
         - # -- Name of the office suite. Will be displayed to the users.
           name: OnlyOffice
           # -- Enables the office suite.
@@ -269,8 +338,24 @@ features:
           # -- Disables SSL certificate checking for connections to the office suites http api.
           # Not recommended for production installations.
           insecure: false
-          # -- Disables Chat functionality of OnlyOffice
-          disableChat: false
+          # Ingress for collaboration service.
+          ingress:
+            # -- Enables the Ingress. Only needed if the office application is not running within the same cluster.
+            enabled: false
+            # -- Domain of the Ingress.
+            domain: ""
+            # -- Ingress class to use.
+            # Uses the default ingress class if not set.
+            ingressClassName:
+            # -- Ingress annotations.
+            annotations: {}
+            # -- Labels for the ingress.
+            labels: {}
+            # -- Ingress TLS configuration.
+            tls: []
+            #  - secretName: chart-example-tls
+            #    hosts:
+            #      - onlyoffice-wopi.owncloud.test
     # -- Mimetype configuration.
     # Let's you configure a mimetypes' default application, if it is allowed to create a new file and more.
     # @default -- default configuration of oCIS, see https://doc.owncloud.com/ocis/next/deployment/services/s-list/app-registry.html#yaml-example[doc.owncloud.com]
@@ -301,6 +386,7 @@ features:
     oidc:
       # -- Issuer URI of the OpenID Connect Identity Provider.
       # If the IDP doesn't have valid / trusted SSL certificates, certificate validation can be disabled with the `insecure.oidcIdpInsecure` option.
+      # The issuerURI will be automatically be added to http.csp.directives.connectSrc
       issuerURI: ""
       # -- Link to the OIDC provider's user accessible session management. This will be shown to the user on the personal account page.
       # When using Keycloak with the a realm named "ocis" this could point to eg. https://keycloak.owncloud.test/realms/ocis/account/
@@ -578,6 +664,8 @@ configRefs:
 secretRefs:
   # -- Reference to an existing admin user secret (see xref:{secrets}[Secrets]). Not used if `features.externalUserManagement.enabled` equals `true`.
   adminUserSecretRef: ""
+  # - Reference to an existing collaboration service WOPI secret (see xref:{secrets}[Secrets]). Not used if `features.appsIntegration.enabled` equals `false`.
+  collaborationWopiSecret: ""
   # -- Reference to an existing IDP secret (see xref:{secrets}[Secrets]). Not used if `features.externalUserManagement.enabled` equals `true`.
   idpSecretRef: ""
   # -- Reference to an existing JWT secret (see xref:{secrets}[Secrets]).
@@ -661,7 +749,7 @@ replicas: 1
 podDisruptionBudget:
   {}
   # -- Sets the maxUnavailable or the global PodDisruptionBudget.
-  #maxUnavailable: 1
+  # maxUnavailable: 1
 
 # Autoscaling settings.
 autoscaling:
@@ -760,15 +848,19 @@ extraResources: []
 
 # per-service configuration.
 services:
-  # -- APP PROVIDER service. Not used if `features.appsIntegration.enabled` equals `false`.
+  # -- COLLABORATION service. Not used if `features.appsIntegration.enabled` equals `false`.
   # @default -- see detailed service configuration options below
-  appprovider:
+  collaboration:
     # -- Per-service resources configuration. Overrides the default setting from `resources` if set.
     resources: {}
     # -- Per-service nodeSelector configuration. Overrides the default setting from `nodeSelector` if set.
     nodeSelector: {}
     # -- Per-service priorityClassName configuration. Overrides the default setting from `priorityClassName` if set.
     priorityClassName: ""
+    # -- Per-service PodDisruptionBudget. Overrides the default setting from `podDisruptionBudget` if set.
+    podDisruptionBudget: {}
+    # -- Per-service autoscaling. Overrides the default setting from `autoscaling` if set.
+    autoscaling: {}
     # -- Affinity settings for the approvider service.
     affinity: {}
     # -- Configuration for the appprovider service, every other service will have the same configuration.
@@ -1431,6 +1523,17 @@ services:
   # -- PROXY service.
   # @default -- see detailed service configuration options below
   proxy:
+    # -- Specifies additional policies for the proxy service.
+    # Routes are appended to the default routes of specified policies.
+    # The policy name should always be 'ocis'.
+    additionalPolicies: []
+    #  - name: ocis
+    #    routes:
+    #      - endpoint: /some-service/endpoint
+    #        service: com.owncloud.some-namespace.some-service
+    #        unprotected: true
+    #
+
     # -- Per-service resources configuration. Overrides the default setting from `resources` if set.
     resources: {}
     # -- Per-service nodeSelector configuration. Overrides the default setting from `nodeSelector` if set.
@@ -1913,6 +2016,11 @@ services:
   # -- THUMBNAILS service.
   # @default -- see detailed service configuration options below
   thumbnails:
+    quota:
+      # -- Number of maximum concurrent thumbnail requests. Default is 0 which is unlimited.
+      maxConcurrencyRequests: 0
+      # -- Sets a maximum file size of an input image which is being processed. Usable common abbreviations: [KB, KiB, MB, MiB, GB, GiB, TB, TiB, PB, PiB, EB, EiB], example: 2GB.
+      maxFileSize: 50MB
     # -- Persistence settings.
     # @default -- see detailed persistence configuration options below
     persistence:
@@ -2112,7 +2220,9 @@ services:
         # - text-editor
         # - pdf-viewer
         # - external
-        # - user-management
+        # - admin-settings
+        # - epub-reader
+        # - draw-io
       # -- Configure the {"applications": []} section in the Web config.json.
       applications:
         []
