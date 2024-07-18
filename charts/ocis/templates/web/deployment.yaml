@@ -62,7 +62,7 @@ spec:
 
             {{- with .Values.features.externalUserManagement.oidc }}
             - name: WEB_OIDC_SCOPE
-              value: {{ printf "openid profile email%s%s" (default "" (printf " %s" .userIDClaim)) (default "" (printf " %s" .roleAssignment.claim)) | trim | quote }}
+              value: {{ printf "openid profile email%s" (default "" (printf " %s" .roleAssignment.claim)) | quote }}
             {{- end }}
 
             - name: WEB_UI_THEME_SERVER

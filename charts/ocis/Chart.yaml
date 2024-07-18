@@ -9,7 +9,7 @@ maintainers:
     email: devops@owncloud.com
     url: https://owncloud.com
 type: application
-version: 0.8.1
+version: 0.8.2
 # renovate: datasource=docker depName=owncloud/ocis
 appVersion: 6.1.0
 kubeVersion: "" # please see https://doc.owncloud.com/ocis/next/deployment/container/orchestration/orchestration.html#get-the-chart for compatible Kubernetes versions
